@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -34,8 +35,13 @@ var procSlice = make([][]string, 4) //starting cap 4
 	}
 */
 
-func listener() {
+func listener(port string) {
+	listener, err := net.Listen("tcp", port)
+	if err != nil {
+		panic("Unable to listen on the port")
+	}
 	fmt.Println("Im listening!")
+	fmt.Println(listener)
 }
 
 func main() {
@@ -70,16 +76,25 @@ func main() {
 
 	i := 0
 	for ; scanner.Scan(); i++ {
-		procSlice[i] = strings.Split(scanner.Text(), " ")
-		if len(procSlice[i]) != 3 {
+		tmpSlice := strings.Split(scanner.Text(), " ")
+		if i == linesToRead {
+			if len(procSlice[i]) != 3 {
+				panic("the config line for this process had an odd formatting")
+			}
+			//set linesToRead to len, since we might skip some lines
+			linesToRead = len(tmpSlice) + 1
+		} else if len(procSlice[i]) != 3 {
 			fmt.Println("a config line had odd formatting, skipping")
-			procSlice[i] = []string{"-1", "0.0.0.0", "-1"} //setting it to values that make it clear that its unreal
 		}
+		procSlice = append(procSlice, tmpSlice)
 	}
 	if i < linesToRead { //never initialized, ran out of text
 		panic("line_to_read is larger than the size of the config file")
 	}
 	fmt.Println("at the end")
-	go listener()
+	if procSlice[linesToRead][2] == "-1" { //-1 is the value if strings.Split() couldnt parse
+		panic("Unable to parse what port to listen on")
+	}
+	go listener(procSlice[linesToRead][2])
 	fmt.Println("at the end, truly")
 }
