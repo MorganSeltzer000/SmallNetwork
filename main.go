@@ -7,11 +7,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var delayArray [2]int
 var defaultDelay [2]int = [2]int{10, 1000}
-var procSlice = make([][]string, 4) //starting cap 4
+var procSlice = make([][]string, 0, 4) //starting cap 4
 
 /*
 	func unicast_send(destination string, message string) {
@@ -36,7 +37,8 @@ var procSlice = make([][]string, 4) //starting cap 4
 */
 
 func listener(port string) {
-	listener, err := net.Listen("tcp", port)
+	listener, err := net.Listen("tcp", ":"+port)
+	fmt.Println("Supposed to listen on port", port)
 	if err != nil {
 		panic("Unable to listen on the port")
 	}
@@ -78,12 +80,13 @@ func main() {
 	for ; scanner.Scan(); i++ {
 		tmpSlice := strings.Split(scanner.Text(), " ")
 		if i == linesToRead {
-			if len(procSlice[i]) != 3 {
+			if len(tmpSlice) != 3 {
 				panic("the config line for this process had an odd formatting")
 			}
 			//set linesToRead to len, since we might skip some lines
+			//+1 since we always skip the delay line
 			linesToRead = len(tmpSlice) + 1
-		} else if len(procSlice[i]) != 3 {
+		} else if len(tmpSlice) != 3 {
 			fmt.Println("a config line had odd formatting, skipping")
 		}
 		procSlice = append(procSlice, tmpSlice)
@@ -91,10 +94,9 @@ func main() {
 	if i < linesToRead { //never initialized, ran out of text
 		panic("line_to_read is larger than the size of the config file")
 	}
-	fmt.Println("at the end")
-	if procSlice[linesToRead][2] == "-1" { //-1 is the value if strings.Split() couldnt parse
-		panic("Unable to parse what port to listen on")
-	}
+
+	fmt.Println("at the end", linesToRead, procSlice[linesToRead])
 	go listener(procSlice[linesToRead][2])
 	fmt.Println("at the end, truly")
+	time.Sleep(1000)
 }
