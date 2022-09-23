@@ -14,16 +14,17 @@ var delayArray [2]int
 var defaultDelay [2]int = [2]int{10, 1000}
 var procSlice = make([][]string, 0, 4) //starting cap 4
 
-/*
-	func unicast_send(destination string, message string) {
-		connection, err := net.Dial("tcp", destination)
-		if err != nil {
-			fmt.Printf("Unable to connect to process: %s", destination)
-		}
-		fmt.Fprintf(connection, message)
-		//todo
+func unicast_send(destination string, message string) {
+	connection, err := net.Dial("tcp", destination)
+	if err != nil {
+		fmt.Printf("Unable to connect to process: %s", destination)
+		return
 	}
+	fmt.Fprintf(connection, message)
+	//todo
+}
 
+/*
 	func unicast_receive(source, message string) {
 		listener, err = net.Listen("tcp", PORT)
 		receiveTime := time.Now().UnixMilli()
@@ -97,6 +98,16 @@ func main() {
 
 	fmt.Println("at the end", linesToRead, procSlice[linesToRead])
 	go listener(procSlice[linesToRead][2])
+	var stdSlice []string
+	stdScan := bufio.NewScanner(os.Stdin)
+	for stdScan.Scan() {
+		stdSlice = strings.Split(stdScan.Text(), " ")
+		if len(stdSlice) < 3 || stdSlice[0] != "send" {
+			fmt.Println("Incorrect args. Format as 'send ID MESSAGE'")
+			continue
+		}
+		go unicast_send(stdSlice[1], strings.Join(stdSlice[2:], ""))
+	}
 	fmt.Println("at the end, truly")
 	time.Sleep(1000)
 }
