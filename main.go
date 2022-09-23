@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"net"
 	"os"
 	"strconv"
@@ -20,8 +21,15 @@ func unicast_send(destination string, message string) {
 		fmt.Printf("Unable to connect to process: %s", destination)
 		return
 	}
-	fmt.Fprintf(connection, message)
-	//todo
+	startTime := time.Now().UnixMilli()
+	delay := int64(rand.Intn(defaultDelay[1]+defaultDelay[0]) - defaultDelay[0]) //so can compare w/ startTime
+	//doing it this way, since context switching could happen
+	for time.Now().UnixMilli()-startTime < delay {
+	}
+	n, err := fmt.Fprintf(connection, message)
+	if err != nil || len(message) != n {
+		fmt.Printf("Did not send entire message to process %s", destination)
+	}
 }
 
 /*
