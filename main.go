@@ -13,8 +13,7 @@ import (
 
 var delayArray [2]int
 var defaultDelay [2]int = [2]int{10, 1000}
-var procSlice = make([][]string, 0, 4) //starting cap 4
-var procDict = make(map[string]string) //map PID to destIP:port
+var procDict = make(map[string][2]string) //map PID to [destIP,port]
 
 func unicast_send(destination string, message string) {
 	fmt.Println("Sending to", destination)
@@ -26,14 +25,14 @@ func unicast_send(destination string, message string) {
 	startTime := time.Now().UnixMilli()
 	//because we're simulating network delay, we print the message actually before we send
 	//and then just have an error message if the sending actually fails
-	fmt.Printf("Sent \"%s\" to process %s, system time is %d", message, destination, startTime)
+	fmt.Printf("Sent \"%s\" to process %s, system time is %d\n", message, destination, startTime)
 	delay := int64(rand.Intn(defaultDelay[1]+defaultDelay[0]) - defaultDelay[0]) //so can compare w/ startTime
 	//doing it this way, since context switching could happen
 	for time.Now().UnixMilli()-startTime < delay {
 	}
 	n, err := fmt.Fprintf(connection, message)
 	if err != nil || len(message) != n {
-		fmt.Printf("Did not send entire message to process %s", destination)
+		fmt.Printf("Did not send entire message to process %s\n", destination)
 	}
 }
 
@@ -92,7 +91,7 @@ func main() {
 	}
 
 	i := 1 //because already read one line
-	thisProcIndex := linesToRead
+	myPID := "-1"
 	for ; scanner.Scan(); i++ {
 		tmpSlice := strings.Split(scanner.Text(), " ")
 		if i == linesToRead {
@@ -101,18 +100,17 @@ func main() {
 			}
 			//set linesToRead to len, since we might skip some lines
 			//+1 since we always skip the delay line
-			thisProcIndex = len(procSlice)
+			myPID = tmpSlice[0]
 		} else if len(tmpSlice) != 3 {
 			fmt.Println("a config line had odd formatting, skipping")
 		}
-		procSlice = append(procSlice, tmpSlice)
-		procDict[tmpSlice[0]] = tmpSlice[1] + ":" + tmpSlice[2]
+		procDict[tmpSlice[0]] = [2]string{tmpSlice[1], tmpSlice[2]}
 	}
 	if i < linesToRead { //never initialized, ran out of text
 		panic("line_to_read is larger than the size of the config file")
 	}
 
-	go listener(procSlice[thisProcIndex][2])
+	go listener(procDict[myPID][1])
 	var stdSlice []string
 	stdScan := bufio.NewScanner(os.Stdin)
 	for stdScan.Scan() {
@@ -122,7 +120,7 @@ func main() {
 			continue
 		}
 		fmt.Println("Will be sending to", stdSlice[1])
-		go unicast_send(procDict[stdSlice[1]], strings.Join(stdSlice[2:], ""))
+		go unicast_send(procDict[stdSlice[1]][0]+":"+procDict[stdSlice[1]][1], strings.Join(stdSlice[2:], ""))
 	}
 	fmt.Println("at the end, truly")
 	time.Sleep(1000)
