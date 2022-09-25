@@ -18,6 +18,7 @@ var procDict = make(map[string][2]string) //map PID to [destIP,port]
 func unicast_send(destination string, message string) {
 	fmt.Println("Sending to", destination)
 	connection, err := net.Dial("tcp", destination)
+	defer connection.Close()
 	if err != nil {
 		fmt.Printf("Unable to connect to process: %s\n", destination)
 		return
@@ -30,9 +31,9 @@ func unicast_send(destination string, message string) {
 	//doing it this way, since context switching could happen
 	for time.Now().UnixMilli()-startTime < delay {
 	}
-	n, err := fmt.Fprintf(connection, message)
+	n, err := fmt.Fprintf(connection, message+"\n")
 	if err != nil || len(message) != n {
-		fmt.Printf("Did not send entire message to process %s\n", destination)
+		fmt.Printf("Did not send entire message to process %s", destination)
 	}
 }
 
@@ -60,6 +61,7 @@ func listener(port string) {
 	//todo: more code
 
 	connection, err := l.Accept()
+	fmt.Println("Accepted the connection")
 	if err != nil {
 		fmt.Printf("Unable to connect to listener: %s\n", l)
 		return
