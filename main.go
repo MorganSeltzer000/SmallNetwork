@@ -37,36 +37,7 @@ func unicast_send(destination string, message string) {
 }
 
 func unicast_receive(source, message string) {
-	l, err := net.Listen("tcp", source)
-	if err != nil {
-		fmt.Printf("Unable to listen to process: %s\n", source)
-		return
-	}
-	defer l.Close()
-
-	connection, err := l.Accept()
-	if err != nil {
-		fmt.Printf("Unable to connect to listener: %s\n", l)
-		return
-	}
-
-	netData, err := bufio.NewReader(c).ReadString('\n')
-	if err != nil {
-		fmt.Printf("Unable to read from: %s\n", connection)
-		return
-	}
-
-	if strings.TrimSpace(string(netData)) == "STOP" {
-		fmt.Println("Exiting TCP server!")
-		return
-	}
-
-    t := time.Now()
-    myTime := t.Format(time.RFC3339) + "\n"
-    c.Write([]byte(myTime))
-	
-	fmt.Printf("Received \"%s\" from process %s, system time is %s\n\n  ", string(netData), strings.Split(message, "$$")[0], strings.Split(time.Now().String(), " ")[1])
-	
+	fmt.Printf("Received \"%s\" from process %s, system time is %s\n\n  ", message, source, strings.Split(time.Now().String(), " ")[1])
 	receiveTime := time.Now().UnixMilli()
 	fmt.Printf("Recieved at %d", receiveTime)
 }
@@ -79,7 +50,7 @@ func unicast_receive(source, message string) {
 */
 
 func listener(port string) {
-	listener, err := net.Listen("tcp", ":"+port)
+	l, err := net.Listen("tcp", ":"+port)
 	fmt.Println("Supposed to listen on port", port)
 	if err != nil {
 		panic("Unable to listen on the port")
@@ -87,6 +58,26 @@ func listener(port string) {
 	fmt.Println("Im listening!")
 	fmt.Println(listener) //just here temporarily so the variable is used
 	//todo: more code
+
+	connection, err := l.Accept()
+	if err != nil {
+		fmt.Printf("Unable to connect to listener: %s\n", l)
+		return
+	}
+	for {
+		netData, err := bufio.NewReader(connection).ReadString('\n')
+		if err != nil {
+			fmt.Printf("Unable to read from: %s\n", connection)
+			return
+		}
+		str := strings.TrimSpace(string(netData))
+
+		source := strings.Split(str, " ")[0]
+		message := strings.Split(str, " ")[1]
+
+		unicast_receive(source, message)
+	}
+	connection.Close()
 }
 
 func main() {
