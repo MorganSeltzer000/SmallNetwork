@@ -36,13 +36,17 @@ func unicast_send(destination string, message string) {
 	}
 }
 
-/*
-	func unicast_receive(source, message string) {
-		listener, err = net.Listen("tcp", PORT)
-		receiveTime := time.Now().UnixMilli()
-		fmt.Printf("Recieved at %d", receiveTime)
+func unicast_receive(source, message string) {
+	l, err := net.Listen("tcp", source) // Creation of a TCP Server
+	if err != nil {
+		fmt.Printf("Unable to listen: %s\n", source)
+		return
 	}
+	receiveTime := time.Now().UnixMilli()
+	fmt.Printf("Recieved at %d", receiveTime)
+}
 
+/*
 	func simulate_process(procName) {
 		go unicast_send()
 		go unicast_receive()
