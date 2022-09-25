@@ -1,0 +1,9 @@
+10 1000
+webProcess 127.0.0.1 8080
+reservoirProcess 127.0.0.1 4509
+clevelandProcess 127.0.0.1 8991
+plexProcess1 127.0.0.1 4111
+plexProcess2 127.0.0.1 4111
+plexProcess3 127.0.0.1 4111
+plexProcess4 127.0.0.1 4111
+plexProcess5 127.0.0.1 4111
