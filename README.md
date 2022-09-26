@@ -3,7 +3,7 @@ This is a NetWork Simulation Project implemented in Go. In this project, we will
 by using a configuration file.
 
 There are 2 major parts of the file:
-- config.txt: The configuration file contains 9 lines: the first line is the minimum and maximum simulated delay. The other lines contain three information: ID, IP Address, and Port Number. It should look like the following
+- config.txt: The configuration file contains 9 lines: the first line is the minimum and maximum simulated delay. The other lines contain three information: ID, IP Address, and Port Number. It looks like the following
 
 ```
 min_Delay max_Delay
