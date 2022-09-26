@@ -31,22 +31,21 @@ func unicast_send(myPID string, destination string, message string) {
 	//doing it this way, since context switching could happen
 	for time.Now().UnixMilli()-startTime < delay {
 	}
-	n, err := fmt.Fprintf(connection, myPID+" "+message+"\n")
-	if err != nil || (len(message)+len(myPID)+2) != n {
-		fmt.Println(err)
+	n, err := fmt.Fprintf(connection, myPID + " " + message+"\n")
+	if err != nil || len(message) != n {
+		fmt.Printf("Did not send entire message to process %s \n", destination)
 	}
 }
 
 func unicast_receive(source, message string) {
 	fmt.Printf("Received \"%s\" from process %s, system time is %s \n", message, source, time.Now().UnixMilli())
-
 }
 
 /*
- func simulate_process(procName) {
-  go unicast_send()
-  go unicast_receive()
- }
+	func simulate_process(procName) {
+		go unicast_send()
+		go unicast_receive()
+	}
 */
 
 func listener(port string) {
@@ -56,7 +55,9 @@ func listener(port string) {
 		panic("Unable to listen on the port")
 	}
 	fmt.Println("Im listening!")
-	//fmt.Println(listener) //just here temporarily so the variable is used
+	fmt.Println(listener) //just here temporarily so the variable is used
+	//todo: more code
+
 	connection, err := l.Accept()
 	fmt.Println("Accepted the connection")
 	if err != nil {
@@ -73,7 +74,9 @@ func listener(port string) {
 
 	source := strings.Split(str, " ")[0]
 	message := strings.Split(str, " ")[1]
+
 	unicast_receive(source, message)
+
 	connection.Close()
 }
 
