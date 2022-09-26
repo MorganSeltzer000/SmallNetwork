@@ -47,3 +47,11 @@ Received "hello" from process [x], system time is [system time]
 ```
 where x is the terminal you send message from, and system time is the current system time.
 
+At the end of communication, the user can terminate the communication by ```Ctrl + C```(for Windows Users).Then the following message shall appear.
+```
+at the end, truly
+(exit status xxxxxxx) 
+```
+
+The line ```exit status xxxxxx ``` should only appear on the sending side.
+
