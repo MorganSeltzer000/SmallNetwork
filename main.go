@@ -31,8 +31,8 @@ func unicast_send(myPID string, destination string, message string) {
 	//doing it this way, since context switching could happen
 	for time.Now().UnixMilli()-startTime < delay {
 	}
-	n, err := fmt.Fprintf(connection, myPID + " " + message+"\n")
-	if err != nil || len(message) != n {
+	n, err := fmt.Fprintf(connection, myPID+" "+message+"\n")
+	if err != nil || (len(message)+len(myPID)+2) != n {
 		fmt.Printf("Did not send entire message to process %s \n", destination)
 	}
 }
