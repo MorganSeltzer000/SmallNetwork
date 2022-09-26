@@ -38,7 +38,7 @@ func unicast_send(myPID string, destination string, message string) {
 }
 
 func unicast_receive(source, message string) {
-	fmt.Printf("Received \"%s\" from process %s, system time is %s \n", message, source, time.Now().UnixMilli())
+	fmt.Printf("Received \"%s\" from process %s, system time is %d \n", message, source, time.Now().UnixMilli())
 }
 
 /*
@@ -57,27 +57,28 @@ func listener(port string) {
 	fmt.Println("Im listening!")
 	fmt.Println(listener) //just here temporarily so the variable is used
 	//todo: more code
+	for {
+		connection, err := l.Accept()
+		fmt.Println("Accepted the connection")
+		if err != nil {
+			fmt.Printf("Unable to connect to listener: %s\n", l)
+			return
+		}
 
-	connection, err := l.Accept()
-	fmt.Println("Accepted the connection")
-	if err != nil {
-		fmt.Printf("Unable to connect to listener: %s\n", l)
-		return
+		netData, err := bufio.NewReader(connection).ReadString('\n')
+		if err != nil {
+			fmt.Printf("Unable to read from: %s\n", connection)
+			return
+		}
+		rawMessage := strings.TrimSpace(string(netData))
+
+		source := strings.Split(rawMessage, " ")[0]
+		message := strings.Split(rawMessage, " ")[1]
+
+		unicast_receive(source, message)
+
+		connection.Close()
 	}
-
-	netData, err := bufio.NewReader(connection).ReadString('\n')
-	if err != nil {
-		fmt.Printf("Unable to read from: %s\n", connection)
-		return
-	}
-	str := strings.TrimSpace(string(netData))
-
-	source := strings.Split(str, " ")[0]
-	message := strings.Split(str, " ")[1]
-
-	unicast_receive(source, message)
-
-	connection.Close()
 }
 
 func main() {
