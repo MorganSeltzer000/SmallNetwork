@@ -38,50 +38,52 @@ func unicast_send(myPID string, destination string, message string) {
 }
 
 func unicast_receive(source, message string) {
+	// This is designed to confirm that the message is received properly by printing out the time
+	//The actual processing of information is taken care in listener, please see specification below.
 	fmt.Printf("Received \"%s\" from process %s, system time is %d \n", message, source, time.Now().UnixMilli())
 }
 
-/*
-	func simulate_process(procName) {
-		go unicast_send()
-		go unicast_receive()
-	}
-*/
-
 func listener(port string) {
-	l, err := net.Listen("tcp", ":"+port)
+	// Establish of the Server, then print the port number that's acted for the server.
+	l, err := net.Listen("tcp", ":"+port) // Estbalishment of the Server,
 	fmt.Println("Supposed to listen on port", port)
-	if err != nil {
+	if err != nil { // Program will execute if there is a false connection, if work promptly, then it will print the next message
 		panic("Unable to listen on the port")
 	}
 	fmt.Println("Im listening!")
-	fmt.Println(listener) //just here temporarily so the variable is used
-	//todo: more code
+	//fmt.Println(listener) //This line was used to avoid the "variable declared but not used mistake"
 	for {
+		//This accepts the next incoming call for the connection, and an error message will be printed if connection is not established correctly.
 		connection, err := l.Accept()
 		fmt.Println("Accepted the connection")
 		if err != nil {
 			fmt.Printf("Unable to connect to listener: %s\n", l)
 			return
 		}
-
+		//Read the message that is used for connection purposes
 		netData, err := bufio.NewReader(connection).ReadString('\n')
 		if err != nil {
 			fmt.Printf("Unable to read from: %s\n", connection)
 			return
 		}
+		//In case there were any unhelpful leading and tailing emptyspace, we will trim all the way through to retain useful information
 		rawMessage := strings.TrimSpace(string(netData))
-
+		//The netData has 2 parts: the source and the message, seperated by space, hence by splitting can obtain such information correctly
 		source := strings.Split(rawMessage, " ")[0]
 		message := strings.Split(rawMessage, " ")[1]
 
-		unicast_receive(source, message)
+		unicast_receive(source, message) // Note that this is to make sure it is received properly.
 
 		connection.Close()
 	}
 }
 
 func main() {
+	/*
+		   There are a few error cases that needs to be handeled:
+		1: When the user does not prompt an argument(the connected port) after the executable, the process will terminate automatically
+		2: When the user does not input a correct form of argument after the executable(e.g: an argument that is DNE in the config.txt), program will also terminate
+	*/
 	if len(os.Args) < 2 {
 		panic("Incorrect args: should be ./[PROGNAME] line_to_read")
 	}
@@ -90,6 +92,7 @@ func main() {
 		panic("Incorrect args: should be ./[PROGNAME] line_to_read")
 	}
 	file, err := os.Open("config.txt")
+
 	if err != nil {
 		panic("Unable to open config file")
 	}
