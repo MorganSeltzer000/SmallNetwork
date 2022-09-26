@@ -15,7 +15,7 @@ var delayArray [2]int
 var defaultDelay [2]int = [2]int{10, 1000}
 var procDict = make(map[string][2]string) //map PID to [destIP,port]
 
-func unicast_send(destination string, message string) {
+func unicast_send(myPID string, destination string, message string) {
 	fmt.Println("Sending to", destination)
 	connection, err := net.Dial("tcp", destination)
 	defer connection.Close()
@@ -31,16 +31,14 @@ func unicast_send(destination string, message string) {
 	//doing it this way, since context switching could happen
 	for time.Now().UnixMilli()-startTime < delay {
 	}
-	n, err := fmt.Fprintf(connection, message+"\n")
+	n, err := fmt.Fprintf(connection, myPID + " " + message+"\n")
 	if err != nil || len(message) != n {
-		fmt.Printf("Did not send entire message to process %s", destination)
+		fmt.Printf("Did not send entire message to process %s \n", destination)
 	}
 }
 
 func unicast_receive(source, message string) {
-	fmt.Printf("Received \"%s\" from process %s, system time is %s\n\n  ", message, source, strings.Split(time.Now().String(), " ")[1])
-	receiveTime := time.Now().UnixMilli()
-	fmt.Printf("Recieved at %d", receiveTime)
+	fmt.Printf("Received \"%s\" from process %s, system time is %s \n", message, source, time.Now().UnixMilli())
 }
 
 /*
@@ -66,19 +64,19 @@ func listener(port string) {
 		fmt.Printf("Unable to connect to listener: %s\n", l)
 		return
 	}
-	for {
-		netData, err := bufio.NewReader(connection).ReadString('\n')
-		if err != nil {
-			fmt.Printf("Unable to read from: %s\n", connection)
-			return
-		}
-		str := strings.TrimSpace(string(netData))
 
-		source := strings.Split(str, " ")[0]
-		message := strings.Split(str, " ")[1]
-
-		unicast_receive(source, message)
+	netData, err := bufio.NewReader(connection).ReadString('\n')
+	if err != nil {
+		fmt.Printf("Unable to read from: %s\n", connection)
+		return
 	}
+	str := strings.TrimSpace(string(netData))
+
+	source := strings.Split(str, " ")[0]
+	message := strings.Split(str, " ")[1]
+
+	unicast_receive(source, message)
+
 	connection.Close()
 }
 
@@ -142,7 +140,7 @@ func main() {
 			continue
 		}
 		fmt.Println("Will be sending to", stdSlice[1])
-		go unicast_send(procDict[stdSlice[1]][0]+":"+procDict[stdSlice[1]][1], strings.Join(stdSlice[2:], ""))
+		go unicast_send(myPID, procDict[stdSlice[1]][0]+":"+procDict[stdSlice[1]][1], strings.Join(stdSlice[2:], ""))
 	}
 	fmt.Println("at the end, truly")
 	time.Sleep(1000)
