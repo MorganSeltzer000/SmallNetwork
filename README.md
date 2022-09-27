@@ -3,7 +3,7 @@ This is a NetWork Simulation Project implemented in Go. In this project, we will
 by using a configuration file.
 
 There are 2 major parts of the file:
-- config.txt: The configuration file contains 9 lines: the first line is the minimum and maximum simulated delay. The other lines contain three information: ID, IP Address, and Port Number. It looks like the following
+- config.txt: The first line is the minimum and maximum simulated delay. The other lines contain three information: ID, IP Address, and Port Number. It looks like the following
 
 ```
 min_Delay max_Delay
@@ -11,7 +11,12 @@ min_Delay max_Delay
 .....
 ......
 ```
-- main.go: This is the main executable file that contains all code. It contains the following functions. 
+- main.go: This is the main executable file that contains all code. It contains the following functions.
+  - main: This parses the config file and command-line arguments (see below paragraph), and calls listener and unicast_send in goroutines
+  - listener: This creates a server on the port specified in the config file, and accepts the connections.
+  - reader: This reads the message from the connection. This is in a separate function so listener can accept simultaneous connections without blocking to read.
+  - unicast_recieve: This prints out the message, including the current time for the user to see the delay between the send time in one process and the recieve time in another
+  - unicast_send: This sends the message to the specified destination with the specified message
 
 The program can be started by running in the following
 - Open 2 or more terminals: Since we are simulating a network traffic, we probably want to see connections between more than 2 nodes.
@@ -55,3 +60,11 @@ at the end, truly
 
 The line ```exit status xxxxxx ``` should only appear on the sending side.
 
+# Assumptions
+This code is able to handle simultaneous connections, as long as there are enough ports for each connection
+
+We assume there is enough memory on the machine to store the config file in memory
+
+We assume the config file is written using ipv4 (however, the program overall still works if some config lines are formatted incorrectly, they are just skipped)
+
+We assume that the ip address on the line in the config file specified by the command-line argument is the address of the computer running that process
