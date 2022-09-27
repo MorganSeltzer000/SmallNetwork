@@ -68,3 +68,5 @@ We assume there is enough memory on the machine to store the config file in memo
 We assume the config file is written using ipv4 (however, the program overall still works if some config lines are formatted incorrectly, they are just skipped)
 
 We assume that the ip address on the line in the config file specified by the command-line argument is the address of the computer running that process
+
+We did not create all the connections at the start, as that would be around N^2 connections, and thus would not be scalable for larger networks. For example, with 100 nodes there would be 10,000 connections at all times, but instead here there are only as many connections as messages currently being sent.
