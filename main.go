@@ -14,8 +14,9 @@ import (
 var delayArray [2]int
 var defaultDelay [2]int = [2]int{10, 1000}
 var procDict = make(map[string][2]string) //map PID to [destIP,port]
+var myPID string
 
-func unicast_send(myPID string, destination string, message string) {
+func unicast_send(destination string, message string) {
 	fmt.Println("Sending to", destination)
 	// Dial destination to estableish a connection
 	connection, err := net.Dial("tcp", destination)
@@ -30,8 +31,7 @@ func unicast_send(myPID string, destination string, message string) {
 	fmt.Printf("Sent \"%s\" to process %s, system time is %d\n", message, destination, startTime)
 	delay := int64(rand.Intn(defaultDelay[1]+defaultDelay[0]) - defaultDelay[0]) //so can compare w/ startTime
 	// Doing it this way, since context switching could happen
-	for time.Now().UnixMilli()-startTime < delay {
-	}
+	for time.Now().UnixMilli()-startTime < delay { }
 	n, err := fmt.Fprintf(connection, myPID+" "+message+"\n")
 	if err != nil || (len(message)+len(myPID)+2) != n {
 		fmt.Printf("Did not send entire message to process %s \n", destination)
@@ -118,7 +118,7 @@ func main() {
 	}
 
 	i := 1 //because already read one line
-	myPID := "-1"
+	myPID = "-1"
 	for ; scanner.Scan(); i++ {
 		tmpSlice := strings.Split(scanner.Text(), " ")
 		if i == linesToRead {
@@ -150,7 +150,7 @@ func main() {
 		}
 		fmt.Println("Will be sending to", stdSlice[1])
 		// Send the message to the destination (IP followed by port)
-		go unicast_send(myPID, procDict[stdSlice[1]][0]+":"+procDict[stdSlice[1]][1], strings.Join(stdSlice[2:], ""))
+		go unicast_send(procDict[stdSlice[1]][0]+":"+procDict[stdSlice[1]][1], strings.Join(stdSlice[2:], ""))
 	}
 	fmt.Println("at the end, truly")
 	time.Sleep(1000)
